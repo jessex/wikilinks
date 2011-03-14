@@ -14,7 +14,8 @@ user_agent = "wikilinks/1.0" #Wikipedia denies urllib2's default user agent
 
 re_link = re.compile("<a\s*href=['\"](.*?)['\"].*?>") #pulls links from HTML
 re_wiki = re.compile("/wiki/.+") #cares only for links to Wikipedia articles
-re_next = re.compile("/w/index.php\?title=Special:WhatLinksHere/.*namespace=0.*limit=500.*from=.*back=.*") #finds links to another page of incoming links
+#re_next = re.compile("/w/index.php\?title=Special:WhatLinksHere/.*namespace=0.*limit=500.*from=.*back=.*") #finds links to another page of incoming links
+re_next = re.compile("\|\s*<a\s*href=['\"](.*?)['\"].*?>next 500")
 re_input = re.compile("http://en.wikipedia.org/wiki/.+")
 
 to_file = False
@@ -99,7 +100,7 @@ def incoming_articles(title, verbose=True):
 		print "Searching for incoming Wikipedia articles..."
 		
 	link = "http://en.wikipedia.org/w/index.php?title=Special:WhatLinksHere/"
-	link += title + "&limit=500"
+	link += title + "&limit=500&namespace=0"
 	whatlinkshere = page_html(link)
 	
 	inlinks = []
@@ -110,10 +111,11 @@ def incoming_articles(title, verbose=True):
 		if not next_page:
 			more = False
 		else:
-			newlink = "http://en.wikipedia.org" + next_page[0]
+			newlink = ("http://en.wikipedia.org" + next_page[0]).replace("&amp;","&")
 			sleep(1) #wait one second before next request (politeness)
 			whatlinkshere = page_html(newlink)
 	return inlinks
+
 	
 
 if __name__ == "__main__":
